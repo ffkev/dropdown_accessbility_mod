@@ -1,11 +1,14 @@
 import '/backend/api_requests/api_calls.dart';
+import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/upload_data.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:material_palette/material_palette.dart';
 import 'package:provider/provider.dart';
 import 'home_page_model.dart';
 export 'home_page_model.dart';
@@ -75,102 +78,163 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         ),
         body: SafeArea(
           top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              FFButtonWidget(
-                onPressed: () async {
-                  final selectedFiles = await selectFiles(
-                    multiFile: false,
-                  );
-                  if (selectedFiles != null) {
-                    safeSetState(
-                        () => _model.isDataUploading_uploadDataVnv = true);
-                    var selectedUploadedFiles = <FFUploadedFile>[];
+          child: RippleShaderWrap(
+            params: ShaderParams(values: {
+              'frequency': 1.5,
+              'numWaves': 5.0,
+              'amplitude': 1.0,
+              'speed': 1.0,
+              'origin1X': 1.0,
+              'origin1Y': -1.0,
+              'origin2X': -1.0,
+              'origin2Y': 1.0,
+              'originScale': 1.5
+            }, colors: {
+              'bgColor': Color(0xFF202329)
+            }),
+            animationMode: ShaderAnimationMode.continuous,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                FFButtonWidget(
+                  onPressed: () async {
+                    final selectedFiles = await selectFiles(
+                      multiFile: false,
+                    );
+                    if (selectedFiles != null) {
+                      safeSetState(
+                          () => _model.isDataUploading_uploadDataVnv = true);
+                      var selectedUploadedFiles = <FFUploadedFile>[];
 
-                    try {
-                      selectedUploadedFiles = selectedFiles
-                          .map((m) => FFUploadedFile(
-                                name: m.storagePath.split('/').last,
-                                bytes: m.bytes,
-                                originalFilename: m.originalFilename,
-                              ))
-                          .toList();
-                    } finally {
-                      _model.isDataUploading_uploadDataVnv = false;
+                      try {
+                        selectedUploadedFiles = selectedFiles
+                            .map((m) => FFUploadedFile(
+                                  name: m.storagePath.split('/').last,
+                                  bytes: m.bytes,
+                                  originalFilename: m.originalFilename,
+                                ))
+                            .toList();
+                      } finally {
+                        _model.isDataUploading_uploadDataVnv = false;
+                      }
+                      if (selectedUploadedFiles.length ==
+                          selectedFiles.length) {
+                        safeSetState(() {
+                          _model.uploadedLocalFile_uploadDataVnv =
+                              selectedUploadedFiles.first;
+                        });
+                      } else {
+                        safeSetState(() {});
+                        return;
+                      }
                     }
-                    if (selectedUploadedFiles.length == selectedFiles.length) {
-                      safeSetState(() {
-                        _model.uploadedLocalFile_uploadDataVnv =
-                            selectedUploadedFiles.first;
-                      });
+
+                    _model.apiResultopy = await UploadingCallCall.call(
+                      file: _model.uploadedLocalFile_uploadDataVnv,
+                    );
+
+                    if ((_model.apiResultopy?.succeeded ?? true)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Uploaded',
+                            style: TextStyle(
+                              color: FlutterFlowTheme.of(context).primaryText,
+                            ),
+                          ),
+                          duration: Duration(milliseconds: 4000),
+                          backgroundColor:
+                              FlutterFlowTheme.of(context).secondary,
+                        ),
+                      );
                     } else {
-                      safeSetState(() {});
-                      return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Uploaded',
+                            style: TextStyle(
+                              color: FlutterFlowTheme.of(context).primaryText,
+                            ),
+                          ),
+                          duration: Duration(milliseconds: 4000),
+                          backgroundColor:
+                              FlutterFlowTheme.of(context).secondary,
+                        ),
+                      );
                     }
-                  }
 
-                  _model.apiResultopy = await UploadingCallCall.call(
-                    file: _model.uploadedLocalFile_uploadDataVnv,
-                  );
-
-                  if ((_model.apiResultopy?.succeeded ?? true)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Uploaded',
-                          style: TextStyle(
-                            color: FlutterFlowTheme.of(context).primaryText,
+                    safeSetState(() {});
+                  },
+                  text: 'Button',
+                  options: FFButtonOptions(
+                    height: 40.0,
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                    iconPadding:
+                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    color: FlutterFlowTheme.of(context).primary,
+                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                          font: GoogleFonts.interTight(
+                            fontWeight: FlutterFlowTheme.of(context)
+                                .titleSmall
+                                .fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .titleSmall
+                                .fontStyle,
                           ),
-                        ),
-                        duration: Duration(milliseconds: 4000),
-                        backgroundColor: FlutterFlowTheme.of(context).secondary,
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Uploaded',
-                          style: TextStyle(
-                            color: FlutterFlowTheme.of(context).primaryText,
-                          ),
-                        ),
-                        duration: Duration(milliseconds: 4000),
-                        backgroundColor: FlutterFlowTheme.of(context).secondary,
-                      ),
-                    );
-                  }
-
-                  safeSetState(() {});
-                },
-                text: 'Button',
-                options: FFButtonOptions(
-                  height: 40.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                  iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: FlutterFlowTheme.of(context).primary,
-                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.interTight(
+                          color: Colors.white,
+                          letterSpacing: 0.0,
                           fontWeight: FlutterFlowTheme.of(context)
                               .titleSmall
                               .fontWeight,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleSmall.fontStyle,
                         ),
-                        color: Colors.white,
+                    elevation: 0.0,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                FlutterFlowDropDown<String>(
+                  controller: _model.dropDownValueController ??=
+                      FormFieldController<String>(null),
+                  options: ['Option 1', 'Option 2', 'Option 3'],
+                  onChanged: (val) =>
+                      safeSetState(() => _model.dropDownValue = val),
+                  width: 200.0,
+                  height: 40.0,
+                  textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(
+                          fontWeight: FlutterFlowTheme.of(context)
+                              .bodyMedium
+                              .fontWeight,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                            FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                       ),
-                  elevation: 0.0,
-                  borderRadius: BorderRadius.circular(8.0),
+                  hintText: 'Select...',
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: FlutterFlowTheme.of(context).secondaryText,
+                    size: 24.0,
+                  ),
+                  fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                  elevation: 2.0,
+                  borderColor: Colors.transparent,
+                  borderWidth: 0.0,
+                  borderRadius: 8.0,
+                  margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                  hidesUnderline: true,
+                  isOverButton: false,
+                  isSearchable: false,
+                  isMultiSelect: false,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

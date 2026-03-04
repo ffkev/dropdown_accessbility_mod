@@ -105,6 +105,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  dropdown_button2:
+    dependency: "direct main"
+    description:
+      name: dropdown_button2
+      sha256: fbb9ea9ea81b04e48d27bb181852b7e11e684aa2a32e95aec4c131be1849e33a
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   equatable:
     dependency: "direct main"
     description:
@@ -228,7 +236,7 @@ packages:
     source: hosted
     version: "2.0.28"
   flutter_shaders:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_shaders
       sha256: "34794acadd8275d971e02df03afee3dee0f98dbfb8c4837082ad0034f612a3e2"
@@ -445,6 +453,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.1"
+  material_palette:
+    dependency: "direct main"
+    description:
+      name: material_palette
+      sha256: "3a535f517aeff8f844057d81df5f1b973bfd733855399466daf5c6a2e2327c27"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   maybe_just_nothing:
     dependency: transitive
     description:
