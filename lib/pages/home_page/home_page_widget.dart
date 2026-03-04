@@ -78,163 +78,126 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         ),
         body: SafeArea(
           top: true,
-          child: RippleShaderWrap(
-            params: ShaderParams(values: {
-              'frequency': 1.5,
-              'numWaves': 5.0,
-              'amplitude': 1.0,
-              'speed': 1.0,
-              'origin1X': 1.0,
-              'origin1Y': -1.0,
-              'origin2X': -1.0,
-              'origin2Y': 1.0,
-              'originScale': 1.5
-            }, colors: {
-              'bgColor': Color(0xFF202329)
-            }),
-            animationMode: ShaderAnimationMode.continuous,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                FFButtonWidget(
-                  onPressed: () async {
-                    final selectedFiles = await selectFiles(
-                      multiFile: false,
-                    );
-                    if (selectedFiles != null) {
-                      safeSetState(
-                          () => _model.isDataUploading_uploadDataVnv = true);
-                      var selectedUploadedFiles = <FFUploadedFile>[];
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              FFButtonWidget(
+                onPressed: () async {
+                  final selectedFiles = await selectFiles(
+                    multiFile: false,
+                  );
+                  if (selectedFiles != null) {
+                    safeSetState(() => _model.isDataUploading_uploadDataVnv = true);
+                    var selectedUploadedFiles = <FFUploadedFile>[];
 
-                      try {
-                        selectedUploadedFiles = selectedFiles
-                            .map((m) => FFUploadedFile(
-                                  name: m.storagePath.split('/').last,
-                                  bytes: m.bytes,
-                                  originalFilename: m.originalFilename,
-                                ))
-                            .toList();
-                      } finally {
-                        _model.isDataUploading_uploadDataVnv = false;
-                      }
-                      if (selectedUploadedFiles.length ==
-                          selectedFiles.length) {
-                        safeSetState(() {
-                          _model.uploadedLocalFile_uploadDataVnv =
-                              selectedUploadedFiles.first;
-                        });
-                      } else {
-                        safeSetState(() {});
-                        return;
-                      }
+                    try {
+                      selectedUploadedFiles = selectedFiles
+                          .map((m) => FFUploadedFile(
+                                name: m.storagePath.split('/').last,
+                                bytes: m.bytes,
+                                originalFilename: m.originalFilename,
+                              ))
+                          .toList();
+                    } finally {
+                      _model.isDataUploading_uploadDataVnv = false;
                     }
-
-                    _model.apiResultopy = await UploadingCallCall.call(
-                      file: _model.uploadedLocalFile_uploadDataVnv,
-                    );
-
-                    if ((_model.apiResultopy?.succeeded ?? true)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Uploaded',
-                            style: TextStyle(
-                              color: FlutterFlowTheme.of(context).primaryText,
-                            ),
-                          ),
-                          duration: Duration(milliseconds: 4000),
-                          backgroundColor:
-                              FlutterFlowTheme.of(context).secondary,
-                        ),
-                      );
+                    if (selectedUploadedFiles.length == selectedFiles.length) {
+                      safeSetState(() {
+                        _model.uploadedLocalFile_uploadDataVnv = selectedUploadedFiles.first;
+                      });
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Uploaded',
-                            style: TextStyle(
-                              color: FlutterFlowTheme.of(context).primaryText,
-                            ),
-                          ),
-                          duration: Duration(milliseconds: 4000),
-                          backgroundColor:
-                              FlutterFlowTheme.of(context).secondary,
-                        ),
-                      );
+                      safeSetState(() {});
+                      return;
                     }
+                  }
 
-                    safeSetState(() {});
-                  },
-                  text: 'Button',
-                  options: FFButtonOptions(
-                    height: 40.0,
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    color: FlutterFlowTheme.of(context).primary,
-                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .fontStyle,
+                  _model.apiResultopy = await UploadingCallCall.call(
+                    file: _model.uploadedLocalFile_uploadDataVnv,
+                  );
+
+                  if ((_model.apiResultopy?.succeeded ?? true)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Uploaded',
+                          style: TextStyle(
+                            color: FlutterFlowTheme.of(context).primaryText,
                           ),
-                          color: Colors.white,
-                          letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .fontWeight,
-                          fontStyle:
-                              FlutterFlowTheme.of(context).titleSmall.fontStyle,
                         ),
-                    elevation: 0.0,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                FlutterFlowDropDown<String>(
-                  controller: _model.dropDownValueController ??=
-                      FormFieldController<String>(null),
-                  options: ['Option 1', 'Option 2', 'Option 3'],
-                  onChanged: (val) =>
-                      safeSetState(() => _model.dropDownValue = val),
-                  width: 200.0,
-                  height: 40.0,
-                  textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                        font: GoogleFonts.inter(
-                          fontWeight: FlutterFlowTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
-                          fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                        fontStyle:
-                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        duration: Duration(milliseconds: 4000),
+                        backgroundColor: FlutterFlowTheme.of(context).secondary,
                       ),
-                  hintText: 'Select...',
-                  icon: Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: FlutterFlowTheme.of(context).secondaryText,
-                    size: 24.0,
-                  ),
-                  fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                  elevation: 2.0,
-                  borderColor: Colors.transparent,
-                  borderWidth: 0.0,
-                  borderRadius: 8.0,
-                  margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
-                  hidesUnderline: true,
-                  isOverButton: false,
-                  isSearchable: false,
-                  isMultiSelect: false,
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Uploaded',
+                          style: TextStyle(
+                            color: FlutterFlowTheme.of(context).primaryText,
+                          ),
+                        ),
+                        duration: Duration(milliseconds: 4000),
+                        backgroundColor: FlutterFlowTheme.of(context).secondary,
+                      ),
+                    );
+                  }
+
+                  safeSetState(() {});
+                },
+                text: 'Button',
+                options: FFButtonOptions(
+                  height: 40.0,
+                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                  iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  color: FlutterFlowTheme.of(context).primary,
+                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                        font: GoogleFonts.interTight(
+                          fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                          fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                        ),
+                        color: Colors.white,
+                        letterSpacing: 0.0,
+                        fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                        fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                      ),
+                  elevation: 0.0,
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
-              ],
-            ),
+              ),
+              FlutterFlowDropDown<String>(
+                controller: _model.dropDownValueController ??= FormFieldController<String>(null),
+                options: ['Option 1', 'Option 2', 'Option 3'],
+                onChanged: (val) => safeSetState(() => _model.dropDownValue = val),
+                width: 200.0,
+                height: 40.0,
+                textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                      font: GoogleFonts.inter(
+                        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      ),
+                      letterSpacing: 0.0,
+                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                    ),
+                hintText: 'Select...',
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  size: 24.0,
+                ),
+                fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                elevation: 2.0,
+                borderColor: Colors.transparent,
+                borderWidth: 0.0,
+                borderRadius: 8.0,
+                margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                hidesUnderline: true,
+                isOverButton: false,
+                isSearchable: false,
+                isMultiSelect: false,
+              ),
+            ],
           ),
         ),
       ),

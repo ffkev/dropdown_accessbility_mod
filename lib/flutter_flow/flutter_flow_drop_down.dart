@@ -1,6 +1,7 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'form_field_controller.dart';
 import 'package:flutter/material.dart';
 
@@ -38,6 +39,8 @@ class FlutterFlowDropDown<T> extends StatefulWidget {
     this.labelText,
     this.labelTextStyle,
     this.optionsHasValueKeys = false,
+    this.focusNode,
+    this.focusColor,
   }) : assert(
           isMultiSelect
               ? (controller == null &&
@@ -81,6 +84,8 @@ class FlutterFlowDropDown<T> extends StatefulWidget {
   final String? labelText;
   final TextStyle? labelTextStyle;
   final bool optionsHasValueKeys;
+  final FocusNode? focusNode;
+  final Color? focusColor;
 
   @override
   State<FlutterFlowDropDown<T>> createState() => _FlutterFlowDropDownState<T>();
@@ -127,10 +132,19 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
 
   late void Function() _listener;
   final TextEditingController _textEditingController = TextEditingController();
+  late FocusNode _internalFocusNode;
+  bool _isFocused = false;
+
+  FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode;
+
+  Color get _defaultFocusColor =>
+      widget.focusColor ?? Theme.of(context).colorScheme.primary.withValues(alpha: 0.12);
 
   @override
   void initState() {
     super.initState();
+    _internalFocusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
     if (isMultiSelect) {
       _listener =
           () => widget.onMultiSelectChanged!(multiSelectController.value);
@@ -141,8 +155,33 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
     }
   }
 
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() => _isFocused = _focusNode.hasFocus);
+    }
+  }
+
+  void _handleArrowKey(int direction) {
+    if (widget.disabled) return;
+    final options = widget.options;
+    if (options.isEmpty) return;
+
+    if (isMultiSelect) return; // arrow cycling doesn't apply to multi-select
+
+    final current = controller.value;
+    final currentIndex = current != null ? options.indexOf(current) : -1;
+    final nextIndex = (currentIndex + direction).clamp(0, options.length - 1);
+    if (nextIndex != currentIndex) {
+      controller.value = options[nextIndex];
+    }
+  }
+
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    if (widget.focusNode == null) {
+      _internalFocusNode.dispose();
+    }
     if (isMultiSelect) {
       multiSelectController.removeListener(_listener);
     } else {
@@ -154,17 +193,31 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
   @override
   Widget build(BuildContext context) {
     final dropdownWidget = _buildDropdownWidget();
-    return SizedBox(
+    return KeyboardListener(
+      focusNode: FocusNode(skipTraversal: true),
+      onKeyEvent: (event) {
+        if (event is! KeyDownEvent) return;
+        if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+          _handleArrowKey(1);
+        } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+          _handleArrowKey(-1);
+        }
+      },
+      child: SizedBox(
       width: widget.width,
       height: widget.height,
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(widget.borderRadius),
           border: Border.all(
-            color: widget.borderColor,
-            width: widget.borderWidth,
+            color: _isFocused
+                ? Theme.of(context).colorScheme.primary
+                : widget.borderColor,
+            width: _isFocused
+                ? (widget.borderWidth < 2.0 ? 2.0 : widget.borderWidth)
+                : widget.borderWidth,
           ),
-          color: widget.fillColor,
+          color: _isFocused ? _defaultFocusColor : widget.fillColor,
         ),
         child: Padding(
           padding: _useDropdown2() ? EdgeInsets.zero : widget.margin,
@@ -173,7 +226,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
               : dropdownWidget,
         ),
       ),
-    );
+    ));
   }
 
   bool _useDropdown2() =>
@@ -195,7 +248,8 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
       icon: widget.icon,
       isExpanded: true,
       dropdownColor: widget.fillColor,
-      focusColor: Colors.transparent,
+      focusNode: _focusNode,
+      focusColor: _defaultFocusColor,
       decoration: InputDecoration(
         labelText: widget.labelText == null || widget.labelText!.isEmpty
             ? null
@@ -240,35 +294,46 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
             builder: (context, menuSetState) {
               final isSelected =
                   multiSelectController.value?.contains(item) ?? false;
+              void toggleItem() {
+                multiSelectController.value ??= [];
+                isSelected
+                    ? multiSelectController.value!.remove(item)
+                    : multiSelectController.value!.add(item);
+                multiSelectController.update();
+                setState(() {});
+                menuSetState(() {});
+              }
+
               return InkWell(
-                  onTap: () {
-                    multiSelectController.value ??= [];
-                    isSelected
-                        ? multiSelectController.value!.remove(item)
-                        : multiSelectController.value!.add(item);
-                    multiSelectController.update();
-                    // This rebuilds the StatefulWidget to update the button's text.
-                    setState(() {});
-                    // This rebuilds the dropdownMenu Widget to update the check mark.
-                    menuSetState(() {});
-                  },
-                  child: Container(
-                    height: double.infinity,
-                    padding: horizontalMargin,
-                    child: Row(
-                      children: [
-                        if (isSelected)
-                          const Icon(Icons.check_box_outlined)
-                        else
-                          const Icon(Icons.check_box_outline_blank),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            optionLabels[item]!,
-                            style: widget.textStyle,
+                  onTap: toggleItem,
+                  onFocusChange: (_) {},
+                  child: KeyboardListener(
+                    focusNode: FocusNode(skipTraversal: true),
+                    onKeyEvent: (event) {
+                      if (event is KeyDownEvent &&
+                          (event.logicalKey == LogicalKeyboardKey.enter ||
+                              event.logicalKey == LogicalKeyboardKey.space)) {
+                        toggleItem();
+                      }
+                    },
+                    child: Container(
+                      height: double.infinity,
+                      padding: horizontalMargin,
+                      child: Row(
+                        children: [
+                          if (isSelected)
+                            const Icon(Icons.check_box_outlined)
+                          else
+                            const Icon(Icons.check_box_outline_blank),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              optionLabels[item]!,
+                              style: widget.textStyle,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ));
             },
@@ -278,8 +343,14 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
       .toList();
 
   Widget _buildDropdown() {
-    final overlayColor = WidgetStateProperty.resolveWith<Color?>((states) =>
-        states.contains(WidgetState.focused) ? Colors.transparent : null);
+    final focusHighlight = _defaultFocusColor;
+    final overlayColor = WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.focused)) return focusHighlight;
+      if (states.contains(WidgetState.hovered)) {
+        return Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
+      }
+      return null;
+    });
     final iconStyleData = widget.icon != null
         ? IconStyleData(icon: widget.icon!)
         : const IconStyleData();
@@ -287,6 +358,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
       value: currentValue,
       hint: _createHintText(),
       items: isMultiSelect ? _createMultiselectMenuItems() : _createMenuItems(),
+      focusNode: _focusNode,
       iconStyleData: iconStyleData,
       buttonStyleData: ButtonStyleData(
         elevation: widget.elevation.toInt(),
