@@ -244,10 +244,10 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
       skipTraversal: true,
       onKeyEvent: (node, event) {
         if (event is! KeyDownEvent) return KeyEventResult.ignored;
-        if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        if (_isMenuOpen && event.logicalKey == LogicalKeyboardKey.arrowDown) {
           _handleArrowKey(1);
           return KeyEventResult.handled;
-        } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        } else if (_isMenuOpen && event.logicalKey == LogicalKeyboardKey.arrowUp) {
           _handleArrowKey(-1);
           return KeyEventResult.handled;
         }
