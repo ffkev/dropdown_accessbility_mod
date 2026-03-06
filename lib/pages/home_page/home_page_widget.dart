@@ -78,126 +78,343 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         ),
         body: SafeArea(
           top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              FFButtonWidget(
-                onPressed: () async {
-                  final selectedFiles = await selectFiles(
-                    multiFile: false,
-                  );
-                  if (selectedFiles != null) {
-                    safeSetState(() => _model.isDataUploading_uploadDataVnv = true);
-                    var selectedUploadedFiles = <FFUploadedFile>[];
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                FFButtonWidget(
+                  onPressed: () async {
+                    final selectedFiles = await selectFiles(
+                      multiFile: false,
+                    );
+                    if (selectedFiles != null) {
+                      safeSetState(() => _model.isDataUploading_uploadDataVnv = true);
+                      var selectedUploadedFiles = <FFUploadedFile>[];
 
-                    try {
-                      selectedUploadedFiles = selectedFiles
-                          .map((m) => FFUploadedFile(
-                                name: m.storagePath.split('/').last,
-                                bytes: m.bytes,
-                                originalFilename: m.originalFilename,
-                              ))
-                          .toList();
-                    } finally {
-                      _model.isDataUploading_uploadDataVnv = false;
+                      try {
+                        selectedUploadedFiles = selectedFiles
+                            .map((m) => FFUploadedFile(
+                                  name: m.storagePath.split('/').last,
+                                  bytes: m.bytes,
+                                  originalFilename: m.originalFilename,
+                                ))
+                            .toList();
+                      } finally {
+                        _model.isDataUploading_uploadDataVnv = false;
+                      }
+                      if (selectedUploadedFiles.length == selectedFiles.length) {
+                        safeSetState(() {
+                          _model.uploadedLocalFile_uploadDataVnv = selectedUploadedFiles.first;
+                        });
+                      } else {
+                        safeSetState(() {});
+                        return;
+                      }
                     }
-                    if (selectedUploadedFiles.length == selectedFiles.length) {
-                      safeSetState(() {
-                        _model.uploadedLocalFile_uploadDataVnv = selectedUploadedFiles.first;
-                      });
+
+                    _model.apiResultopy = await UploadingCallCall.call(
+                      file: _model.uploadedLocalFile_uploadDataVnv,
+                    );
+
+                    if ((_model.apiResultopy?.succeeded ?? true)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Uploaded',
+                            style: TextStyle(
+                              color: FlutterFlowTheme.of(context).primaryText,
+                            ),
+                          ),
+                          duration: Duration(milliseconds: 4000),
+                          backgroundColor: FlutterFlowTheme.of(context).secondary,
+                        ),
+                      );
                     } else {
-                      safeSetState(() {});
-                      return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Uploaded',
+                            style: TextStyle(
+                              color: FlutterFlowTheme.of(context).primaryText,
+                            ),
+                          ),
+                          duration: Duration(milliseconds: 4000),
+                          backgroundColor: FlutterFlowTheme.of(context).secondary,
+                        ),
+                      );
                     }
-                  }
 
-                  _model.apiResultopy = await UploadingCallCall.call(
-                    file: _model.uploadedLocalFile_uploadDataVnv,
-                  );
-
-                  if ((_model.apiResultopy?.succeeded ?? true)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Uploaded',
-                          style: TextStyle(
-                            color: FlutterFlowTheme.of(context).primaryText,
+                    safeSetState(() {});
+                  },
+                  text: 'Button',
+                  options: FFButtonOptions(
+                    height: 40.0,
+                    padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                    iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    color: FlutterFlowTheme.of(context).primary,
+                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                          font: GoogleFonts.interTight(
+                            fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
                           ),
-                        ),
-                        duration: Duration(milliseconds: 4000),
-                        backgroundColor: FlutterFlowTheme.of(context).secondary,
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Uploaded',
-                          style: TextStyle(
-                            color: FlutterFlowTheme.of(context).primaryText,
-                          ),
-                        ),
-                        duration: Duration(milliseconds: 4000),
-                        backgroundColor: FlutterFlowTheme.of(context).secondary,
-                      ),
-                    );
-                  }
-
-                  safeSetState(() {});
-                },
-                text: 'Button',
-                options: FFButtonOptions(
-                  height: 40.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                  iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: FlutterFlowTheme.of(context).primary,
-                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.interTight(
+                          color: Colors.white,
+                          letterSpacing: 0.0,
                           fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
                           fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
                         ),
-                        color: Colors.white,
-                        letterSpacing: 0.0,
-                        fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
-                        fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                      ),
-                  elevation: 0.0,
-                  borderRadius: BorderRadius.circular(8.0),
+                    elevation: 0.0,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                 ),
-              ),
-              FlutterFlowDropDown<String>(
-                controller: _model.dropDownValueController ??= FormFieldController<String>(null),
-                options: ['Option 1', 'Option 2', 'Option 3'],
-                onChanged: (val) => safeSetState(() => _model.dropDownValue = val),
-                width: 200.0,
-                height: 40.0,
-                textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                      font: GoogleFonts.inter(
-                        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
+                  child: FlutterFlowDropDown<String>(
+                    controller: _model.dropDownValueController ??= FormFieldController<String>(null),
+                    options: ['Option 1', 'Option 2', 'Option 3'],
+                    onChanged: (val) => safeSetState(() => _model.dropDownValue = val),
+                    width: double.infinity,
+                    height: 40.0,
+                    textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                    hintText: 'Select Option...',
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: FlutterFlowTheme.of(context).secondaryText,
+                      size: 24.0,
                     ),
-                hintText: 'Select...',
-                icon: Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: FlutterFlowTheme.of(context).secondaryText,
-                  size: 24.0,
+                    fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                    elevation: 2.0,
+                    borderColor: Colors.transparent,
+                    borderWidth: 0.0,
+                    borderRadius: 8.0,
+                    margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                    hidesUnderline: true,
+                    isOverButton: false,
+                    isSearchable: false,
+                    isMultiSelect: false,
+                  ),
                 ),
-                fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                elevation: 2.0,
-                borderColor: Colors.transparent,
-                borderWidth: 0.0,
-                borderRadius: 8.0,
-                margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
-                hidesUnderline: true,
-                isOverButton: false,
-                isSearchable: false,
-                isMultiSelect: false,
-              ),
-            ],
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
+                  child: FlutterFlowDropDown<String>(
+                    controller: _model.categoryDropDownValueController ??= FormFieldController<String>(null),
+                    options: ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports'],
+                    onChanged: (val) => safeSetState(() => _model.categoryDropDownValue = val),
+                    width: double.infinity,
+                    height: 40.0,
+                    textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                    hintText: 'Select Category...',
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: FlutterFlowTheme.of(context).secondaryText,
+                      size: 24.0,
+                    ),
+                    fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                    elevation: 2.0,
+                    borderColor: Colors.transparent,
+                    borderWidth: 0.0,
+                    borderRadius: 8.0,
+                    margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                    hidesUnderline: true,
+                    isOverButton: false,
+                    isSearchable: false,
+                    isMultiSelect: false,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
+                  child: FlutterFlowDropDown<String>(
+                    controller: _model.priorityDropDownValueController ??= FormFieldController<String>(null),
+                    options: ['Low', 'Medium', 'High', 'Critical'],
+                    onChanged: (val) => safeSetState(() => _model.priorityDropDownValue = val),
+                    width: double.infinity,
+                    height: 40.0,
+                    textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                    hintText: 'Select Priority...',
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: FlutterFlowTheme.of(context).secondaryText,
+                      size: 24.0,
+                    ),
+                    fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                    elevation: 2.0,
+                    borderColor: Colors.transparent,
+                    borderWidth: 0.0,
+                    borderRadius: 8.0,
+                    margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                    hidesUnderline: true,
+                    isOverButton: false,
+                    isSearchable: false,
+                    isMultiSelect: false,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
+                  child: FlutterFlowDropDown<String>(
+                    controller: _model.statusDropDownValueController ??= FormFieldController<String>(null),
+                    options: ['Pending', 'In Progress', 'Under Review', 'Completed', 'Cancelled'],
+                    onChanged: (val) => safeSetState(() => _model.statusDropDownValue = val),
+                    width: double.infinity,
+                    height: 40.0,
+                    textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                    hintText: 'Select Status...',
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: FlutterFlowTheme.of(context).secondaryText,
+                      size: 24.0,
+                    ),
+                    fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                    elevation: 2.0,
+                    borderColor: Colors.transparent,
+                    borderWidth: 0.0,
+                    borderRadius: 8.0,
+                    margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                    hidesUnderline: true,
+                    isOverButton: false,
+                    isSearchable: false,
+                    isMultiSelect: false,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 20.0, 16.0, 0.0),
+                  child: Align(
+                    alignment: AlignmentDirectional(-1.0, 0.0),
+                    child: Text(
+                      'Items',
+                      style: FlutterFlowTheme.of(context).titleMedium.override(
+                            font: GoogleFonts.interTight(
+                              fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                              fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                            ),
+                            letterSpacing: 0.0,
+                            fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                          ),
+                    ),
+                  ),
+                ),
+                ListView.builder(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: 25,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 16.0, 0.0),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: FlutterFlowTheme.of(context).secondaryBackground,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Container(
+                                width: 40.0,
+                                height: 40.0,
+                                decoration: BoxDecoration(
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: AlignmentDirectional(0.0, 0.0),
+                                child: Text(
+                                  '${index + 1}',
+                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                        ),
+                                        color: Colors.white,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                      ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 0.0, 0.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Item ${index + 1}',
+                                        style: FlutterFlowTheme.of(context).bodyLarge.override(
+                                              font: GoogleFonts.inter(
+                                                fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                                fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                              ),
+                                              letterSpacing: 0.0,
+                                              fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                              fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                            ),
+                                      ),
+                                      Text(
+                                        'Description for item ${index + 1}',
+                                        style: FlutterFlowTheme.of(context).labelSmall.override(
+                                              font: GoogleFonts.inter(
+                                                fontWeight: FlutterFlowTheme.of(context).labelSmall.fontWeight,
+                                                fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
+                                              ),
+                                              letterSpacing: 0.0,
+                                              fontWeight: FlutterFlowTheme.of(context).labelSmall.fontWeight,
+                                              fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                color: FlutterFlowTheme.of(context).secondaryText,
+                                size: 24.0,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: 16.0),
+              ],
+            ),
           ),
         ),
       ),

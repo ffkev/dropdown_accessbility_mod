@@ -25,6 +25,18 @@ class HomePageModel extends FlutterFlowModel<HomePageWidget> {
   String? dropDownValue;
   FormFieldController<String>? dropDownValueController;
 
+  // State field(s) for Category DropDown widget.
+  String? categoryDropDownValue;
+  FormFieldController<String>? categoryDropDownValueController;
+
+  // State field(s) for Priority DropDown widget.
+  String? priorityDropDownValue;
+  FormFieldController<String>? priorityDropDownValueController;
+
+  // State field(s) for Status DropDown widget.
+  String? statusDropDownValue;
+  FormFieldController<String>? statusDropDownValueController;
+
   @override
   void initState(BuildContext context) {}
 
