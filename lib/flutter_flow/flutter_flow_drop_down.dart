@@ -134,6 +134,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
   final TextEditingController _textEditingController = TextEditingController();
   late FocusNode _internalFocusNode;
   bool _isFocused = false;
+  bool _isMenuOpen = false;
 
   FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode;
 
@@ -193,15 +194,18 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
   @override
   Widget build(BuildContext context) {
     final dropdownWidget = _buildDropdownWidget();
-    return KeyboardListener(
-      focusNode: FocusNode(skipTraversal: true),
-      onKeyEvent: (event) {
-        if (event is! KeyDownEvent) return;
+    return Focus(
+      skipTraversal: true,
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
         if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
           _handleArrowKey(1);
+          return KeyEventResult.handled;
         } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
           _handleArrowKey(-1);
+          return KeyEventResult.handled;
         }
+        return KeyEventResult.ignored;
       },
       child: SizedBox(
       width: widget.width,
@@ -440,13 +444,17 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
             )
           : null,
       // This is to clear the search value when you close the menu
-      onMenuStateChange: widget.isSearchable
-          ? (isOpen) {
-              if (!isOpen) {
-                _textEditingController.clear();
-              }
-            }
-          : null,
+      onMenuStateChange: (isOpen) {
+        _isMenuOpen = isOpen;
+        if (isOpen) {
+          // Auto-highlight the first option if nothing is selected
+          if (!isMultiSelect && controller.value == null && widget.options.isNotEmpty) {
+            controller.value = widget.options.first;
+          }
+        } else if (widget.isSearchable) {
+          _textEditingController.clear();
+        }
+      },
     );
   }
 }
