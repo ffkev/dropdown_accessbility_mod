@@ -162,6 +162,52 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
     }
   }
 
+  bool _focusMenuOverlayItem() {
+    int targetIndex = 0;
+    if (!isMultiSelect) {
+      final current = controller.value;
+      if (current != null) {
+        final idx = widget.options.indexOf(current);
+        if (idx >= 0) targetIndex = idx;
+      }
+    }
+
+    final myScope = _focusNode.enclosingScope;
+    if (myScope == null) return false;
+
+    // Find the popup route's scope by recursively searching from the
+    // view scope (parent of our route scope) for any FocusScopeNode
+    // that isn't our main route scope.
+    final viewScope = myScope.enclosingScope;
+    if (viewScope == null) return false;
+
+    final popupScope = _findPopupScope(viewScope, myScope);
+    if (popupScope == null) return false;
+
+    final focusableNodes = popupScope.traversalDescendants
+        .where((n) => n.canRequestFocus)
+        .toList();
+    if (focusableNodes.isNotEmpty) {
+      final idx = targetIndex.clamp(0, focusableNodes.length - 1);
+      focusableNodes[idx].requestFocus();
+      return true;
+    }
+    return false;
+  }
+
+  /// Recursively search [parent]'s children for a [FocusScopeNode]
+  /// that is not [exclude].
+  FocusScopeNode? _findPopupScope(FocusNode parent, FocusScopeNode exclude) {
+    for (final child in parent.children) {
+      if (child is FocusScopeNode && child != exclude) {
+        return child;
+      }
+      final result = _findPopupScope(child, exclude);
+      if (result != null) return result;
+    }
+    return null;
+  }
+
   void _handleArrowKey(int direction) {
     if (widget.disabled) return;
     final options = widget.options;
@@ -204,6 +250,11 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
         } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
           _handleArrowKey(-1);
           return KeyEventResult.handled;
+        }
+        if (_isMenuOpen && event.logicalKey == LogicalKeyboardKey.tab) {
+          if (_focusMenuOverlayItem()) {
+            return KeyEventResult.handled;
+          }
         }
         return KeyEventResult.ignored;
       },
@@ -446,12 +497,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
       // This is to clear the search value when you close the menu
       onMenuStateChange: (isOpen) {
         _isMenuOpen = isOpen;
-        if (isOpen) {
-          // Auto-highlight the first option if nothing is selected
-          if (!isMultiSelect && controller.value == null && widget.options.isNotEmpty) {
-            controller.value = widget.options.first;
-          }
-        } else if (widget.isSearchable) {
+        if (!isOpen && widget.isSearchable) {
           _textEditingController.clear();
         }
       },
